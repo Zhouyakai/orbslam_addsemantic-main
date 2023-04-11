@@ -1,0 +1,35 @@
+解压到/home/yakai/SLAM目录下
+put yolov5s.pt into /home/yakai/SLAM/orbslam_addsemantic-main/yolov5_RemoveDynamic
+./build.sh
+
+orb2+yolov5运行指令
+conda activate yolov5
+cd /home/yakai/SLAM/orbslam_addsemantic-main/yolov5_RemoveDynamic
+python detect_speedup_send.py --source /home/yakai/SLAM/Date/rgbd_dataset_freiburg3_walking_xyz/rgb --weights ./yolov5s.pt --conf 0.4 --save-txt --img-size 224
+
+cd /home/yakai/SLAM/orbslam_addsemantic-main
+./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml /home/yakai/SLAM/Date/rgbd_dataset_freiburg3_walking_xyz/ /home/yakai/SLAM/Date/rgbd_dataset_freiburg3_walking_xyz/associations.txt
+
+
+
+#TUM/rgbd_dataset_freiburg3_walking_xyz
+./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_xyz ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_xyz/associate.txt detect_result/TUM_f3xyz_yolov5m/detect_result/
+
+#rgbd_dataset_freiburg3_walking_halfsphere
+./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/ ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/associate.txt detect_result/TUM_f3halfsphere_yolov5x/detect_result/
+
+2021-4-30----new!
+#添加了python-c++通信:yolo和orb的tracking线程并行,orb在i5 cpu运行需要0.0282526一帧,所以yolo只要在0.02s内即可
+因此可以使用yolov5s+imgsize224-320-416; yolov5l+imgsize224; yolov5m+imgsize224
+打开两个终端,分别运行:
+
+终端1:进入到/ORB_SLAM2_AddSemantic/yolov5_RemoveDynamic:
+(python detect_speedup_send.py +path to afterchanged dataset + weights ./weights/yolov5s.pt --conf 0.4 --save-txt --img-size 224)
+一个例子:
+python detect_speedup_send.py --source /home/jy/Desktop/dataset/TUM/tum_fr3_walking_xyz_afterchange/rgb/ --weights ./weights/yolov5s.pt --conf 0.4 --save-txt --img-size 224
+
+
+终端2:进入到/ORB_SLAM2_AddSemantic:
+(./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml + path to dataset + path to associatefile)
+一个例子:
+./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM3.yaml ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_xyz ~/Desktop/dataset/TUM/rgbd_dataset_freiburg3_walking_xyz/associate.txt
